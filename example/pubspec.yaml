@@ -28,8 +28,8 @@ dependencies:
   firebase_core: ^2.24.2
   geoflutterfire:
     git:
-      url: https://github.com/TheUnknownCorp/GeoFlutterFire.git
-      ref: "0d6be99"
+      url: https://github.com/CarmeloBeeapp/GeoFlutterFire.git
+      ref: "f100e6c1"
   path_provider: ^2.1.1
   flutter_archive: ^6.0.0
 
