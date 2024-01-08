@@ -1,22 +1,20 @@
-import 'dart:convert';
-
-import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
-import 'package:ar_flutter_plugin/models/ar_anchor.dart';
-import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
-import 'package:vector_math/vector_math_64.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class CloudAnchorWidget extends StatefulWidget {
   CloudAnchorWidget({Key? key}) : super(key: key);
@@ -72,8 +70,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
                   child: Column(
             children: [
               Text("Firebase initialization failed"),
-              ElevatedButton(
-                  child: Text("Retry"), onPressed: () => {initState()})
+              ElevatedButton(child: Text("Retry"), onPressed: () => {initState()})
             ],
           ))));
     }
@@ -85,11 +82,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
             title: const Text('Cloud Anchors'),
           ),
           body: Container(
-              child: Center(
-                  child: Column(children: [
-            CircularProgressIndicator(),
-            Text("Initializing Firebase")
-          ]))));
+              child: Center(child: Column(children: [CircularProgressIndicator(), Text("Initializing Firebase")]))));
     }
 
     return Scaffold(
@@ -104,39 +97,26 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           ),
           Align(
             alignment: FractionalOffset.bottomCenter,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                      onPressed: onRemoveEverything,
-                      child: Text("Remove Everything")),
-                ]),
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              ElevatedButton(onPressed: onRemoveEverything, child: Text("Remove Everything")),
+            ]),
           ),
           Align(
             alignment: FractionalOffset.topCenter,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Visibility(
-                      visible: readyToUpload,
-                      child: ElevatedButton(
-                          onPressed: onUploadButtonPressed,
-                          child: Text("Upload"))),
-                  Visibility(
-                      visible: readyToDownload,
-                      child: ElevatedButton(
-                          onPressed: onDownloadButtonPressed,
-                          child: Text("Download"))),
-                ]),
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Visibility(
+                  visible: readyToUpload,
+                  child: ElevatedButton(onPressed: onUploadButtonPressed, child: Text("Upload"))),
+              Visibility(
+                  visible: readyToDownload,
+                  child: ElevatedButton(onPressed: onDownloadButtonPressed, child: Text("Download"))),
+            ]),
           )
         ])));
   }
 
-  void onARViewCreated(
-      ARSessionManager arSessionManager,
-      ARObjectManager arObjectManager,
-      ARAnchorManager arAnchorManager,
-      ARLocationManager arLocationManager) {
+  void onARViewCreated(ARSessionManager arSessionManager, ARObjectManager arObjectManager,
+      ARAnchorManager arAnchorManager, ARLocationManager arLocationManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
     this.arAnchorManager = arAnchorManager;
@@ -156,11 +136,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arAnchorManager!.onAnchorUploaded = onAnchorUploaded;
     this.arAnchorManager!.onAnchorDownloaded = onAnchorDownloaded;
 
-    this
-        .arLocationManager
-        !.startLocationUpdates()
-        .then((value) => null)
-        .onError((error, stackTrace) {
+    this.arLocationManager!.startLocationUpdates().then((value) => null).onError((error, stackTrace) {
       switch (error.toString()) {
         case 'Location services disabled':
           {
@@ -227,18 +203,15 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
   }
 
   Future<void> onNodeTapped(List<String> nodeNames) async {
-    var foregroundNode =
-        nodes.firstWhere((element) => element.name == nodeNames.first);
+    var foregroundNode = nodes.firstWhere((element) => element.name == nodeNames.first);
     this.arSessionManager!.onError(foregroundNode.data!["onTapText"]);
   }
 
-  Future<void> onPlaneOrPointTapped(
-      List<ARHitTestResult> hitTestResults) async {
-    var singleHitTestResult = hitTestResults.firstWhere(
-        (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
+  Future<void> onPlaneOrPointTapped(List<ARHitTestResult> hitTestResults) async {
+    var singleHitTestResult =
+        hitTestResults.firstWhere((hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     if (singleHitTestResult != null) {
-      var newAnchor = ARPlaneAnchor(
-          transformation: singleHitTestResult.worldTransform, ttl: 2);
+      var newAnchor = ARPlaneAnchor(transformation: singleHitTestResult.worldTransform, ttl: 2);
       bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
       if (didAddAnchor ?? false) {
         this.anchors.add(newAnchor);
@@ -250,8 +223,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0),
             data: {"onTapText": "Ouch, that hurt!"});
-        bool? didAddNodeToAnchor =
-            await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+        bool? didAddNodeToAnchor = await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
         if (didAddNodeToAnchor ?? false) {
           this.nodes.add(newNode);
           setState(() {
@@ -275,12 +247,11 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
   onAnchorUploaded(ARAnchor anchor) {
     // Upload anchor information to firebase
-    firebaseManager.uploadAnchor(anchor,
-        currentLocation: this.arLocationManager!.currentLocation);
+    firebaseManager.uploadAnchor(anchor, currentLocation: this.arLocationManager!.currentLocation);
     // Upload child nodes to firebase
     if (anchor is ARPlaneAnchor) {
-      anchor.childNodes.forEach((nodeName) => firebaseManager.uploadObject(
-          nodes.firstWhere((element) => element.name == nodeName)));
+      anchor.childNodes
+          .forEach((nodeName) => firebaseManager.uploadObject(nodes.firstWhere((element) => element.name == nodeName)));
     }
     setState(() {
       readyToDownload = true;
@@ -289,8 +260,9 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arSessionManager!.onError("Upload successful");
   }
 
-  ARAnchor onAnchorDownloaded(Map<String, dynamic>serializedAnchor) {
-    final anchor = ARPlaneAnchor.fromJson(anchorsInDownloadProgress[serializedAnchor["cloudanchorid"]] as Map<String, dynamic>);
+  ARAnchor onAnchorDownloaded(Map<String, dynamic> serializedAnchor) {
+    final anchor =
+        ARPlaneAnchor.fromJson(anchorsInDownloadProgress[serializedAnchor["cloudanchorid"]] as Map<String, dynamic>);
     anchorsInDownloadProgress.remove(anchor.cloudanchorid);
     this.anchors.add(anchor);
 
@@ -325,14 +297,12 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
         readyToDownload = false;
       });
     } else {
-      this
-          .arSessionManager!
-          .onError("Location updates not running, can't download anchors");
+      this.arSessionManager!.onError("Location updates not running, can't download anchors");
     }
   }
 
-  void showAlertDialog(BuildContext context, String title, String content,
-      String buttonText, Function buttonFunction, String cancelButtonText) {
+  void showAlertDialog(BuildContext context, String title, String content, String buttonText, Function buttonFunction,
+      String cancelButtonText) {
     // set up the buttons
     Widget cancelButton = ElevatedButton(
       child: Text(cancelButtonText),
@@ -370,13 +340,12 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
 // Class for managing interaction with Firebase (in your own app, this can be put in a separate file to keep everything clean and tidy)
 typedef FirebaseListener = void Function(QuerySnapshot snapshot);
-typedef FirebaseDocumentStreamListener = void Function(
-    DocumentSnapshot snapshot);
+typedef FirebaseDocumentStreamListener = void Function(DocumentSnapshot snapshot);
 
 class FirebaseManager {
   FirebaseFirestore? firestore;
   Geoflutterfire? geo;
-  CollectionReference? anchorCollection;
+  CollectionReference<Map<String, dynamic>>? anchorCollection;
   CollectionReference? objectCollection;
 
   // Firebase initialization function
@@ -398,21 +367,17 @@ class FirebaseManager {
     if (firestore == null) return;
 
     var serializedAnchor = anchor.toJson();
-    var expirationTime = DateTime.now().millisecondsSinceEpoch / 1000 +
-        serializedAnchor["ttl"] * 24 * 60 * 60;
+    var expirationTime = DateTime.now().millisecondsSinceEpoch / 1000 + serializedAnchor["ttl"] * 24 * 60 * 60;
     serializedAnchor["expirationTime"] = expirationTime;
     // Add location
     if (currentLocation != null) {
-      GeoFirePoint myLocation = geo!.point(
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude);
+      GeoFirePoint myLocation = geo!.point(latitude: currentLocation.latitude, longitude: currentLocation.longitude);
       serializedAnchor["position"] = myLocation.data;
     }
 
     anchorCollection!
         .add(serializedAnchor)
-        .then((value) =>
-            print("Successfully added anchor: " + serializedAnchor["name"]))
+        .then((value) => print("Successfully added anchor: " + serializedAnchor["name"]))
         .catchError((error) => print("Failed to add anchor: $error"));
   }
 
@@ -423,8 +388,7 @@ class FirebaseManager {
 
     objectCollection!
         .add(serializedNode)
-        .then((value) =>
-            print("Successfully added object: " + serializedNode["name"]))
+        .then((value) => print("Successfully added object: " + serializedNode["name"]))
         .catchError((error) => print("Failed to add object: $error"));
   }
 
@@ -434,17 +398,14 @@ class FirebaseManager {
         .limitToLast(1)
         .get()
         .then((value) => listener(value))
-        .catchError(
-            (error) => (error) => print("Failed to download anchor: $error"));
+        .catchError((error) => (error) => print("Failed to download anchor: $error"));
   }
 
-  void downloadAnchorsByLocation(FirebaseDocumentStreamListener listener,
-      Position location, double radius) {
-    GeoFirePoint center =
-        geo!.point(latitude: location.latitude, longitude: location.longitude);
+  void downloadAnchorsByLocation(FirebaseDocumentStreamListener listener, Position location, double radius) async {
+    GeoFirePoint center = geo!.point(latitude: location.latitude, longitude: location.longitude);
 
     Stream<List<DocumentSnapshot>> stream = geo!
-        .collection(collectionRef: anchorCollection!)
+        .collection(collectionRef: anchorCollection!.limit(double.maxFinite.ceil()))
         .within(center: center, radius: radius, field: 'position');
 
     stream.listen((List<DocumentSnapshot> documentList) {
@@ -467,16 +428,12 @@ class FirebaseManager {
   void deleteExpiredDatabaseEntries() {
     WriteBatch batch = FirebaseFirestore.instance.batch();
     anchorCollection!
-        .where("expirationTime",
-            isLessThan: DateTime.now().millisecondsSinceEpoch / 1000)
+        .where("expirationTime", isLessThan: DateTime.now().millisecondsSinceEpoch / 1000)
         .get()
         .then((anchorSnapshot) => anchorSnapshot.docs.forEach((anchorDoc) {
               // Delete all objects attached to the expired anchor
-              objectCollection!
-                  .where("name", arrayContainsAny: anchorDoc.get("childNodes"))
-                  .get()
-                  .then((objectSnapshot) => objectSnapshot.docs.forEach(
-                      (objectDoc) => batch.delete(objectDoc.reference)));
+              objectCollection!.where("name", arrayContainsAny: anchorDoc.get("childNodes")).get().then(
+                  (objectSnapshot) => objectSnapshot.docs.forEach((objectDoc) => batch.delete(objectDoc.reference)));
               // Delete the expired anchor
               batch.delete(anchorDoc.reference);
             }));
